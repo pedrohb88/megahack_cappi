@@ -80,13 +80,13 @@ userSchema.statics.sendVerificationToken = function (email) {
                     var transporter = nodemailer.createTransport({
                         service: 'gmail',
                         auth: {
-                            user: 'mymailer998@gmail.com',
-                            pass: 'M^Ade8D^#TrK6GKc'
+                            user: process.env['MAILER_MAIL'],
+                            pass: process.env['MAILER_PASS']
                         }
                     });
 
                     var mailOptions = {
-                        from: 'mymailer998@gmail.com',
+                        from: process.env['MAILER_MAIL'],
                         to: email,
                         subject: `Seu código de verificação da Cappi é ${code}`,
                         text: `Olá! Seu código de verificação da Cappi é: ${code}. Basta enviar esse código pelo whatsapp :)`
