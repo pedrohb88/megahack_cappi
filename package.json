@@ -1,0 +1,39 @@
+{
+  "name": "megahack_cappi",
+  "version": "1.0.0",
+  "description": "API para um app de gestão financeira desenvolvido durante a hackton Megahack",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start-watch": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedrohb88/megahack_cappi.git"
+  },
+  "keywords": [
+    "hackton",
+    "financeiro"
+  ],
+  "author": "Pedro Leal, Ian Louzada, Vitor César",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pedrohb88/megahack_cappi/issues"
+  },
+  "homepage": "https://github.com/pedrohb88/megahack_cappi#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bcryptjs": "^2.4.3",
+    "crypto": "^1.0.1",
+    "crypto-random-string": "^3.2.0",
+    "express": "^4.17.1",
+    "express-xml-bodyparser": "^0.3.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.9.11",
+    "nodemailer": "^6.4.6",
+    "twilio": "^3.43.0",
+    "uuid": "^8.0.0",
+    "validator": "^13.0.0"
+  }
+}
