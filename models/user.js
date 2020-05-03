@@ -5,6 +5,8 @@ let { VerificationToken } = require('./verificationToken');
 const cryptoRandomString = require('crypto-random-string');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
 let userSchema = new mongoose.Schema({
 
@@ -58,11 +60,20 @@ let userSchema = new mongoose.Schema({
     }
 });
 
+
+userSchema.methods.toJSON = function() {
+    let user = this;
+    let userObject = user.toObject();
+
+    return _.pick(userObject, ['_id', 'email', 'name', 'experience', 'totalBalance', 'options']);
+};
+
+
 userSchema.statics.sendVerificationToken = function (email) {
     return new Promise((resolve, reject) => {
 
         VerificationToken.deleteMany({ email: email }).then(() => {
-            let code = cryptoRandomString({ length: 8 });
+            let code = cryptoRandomString({ length: 4 });
 
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(code, salt, (err, hash) => {
@@ -70,13 +81,6 @@ userSchema.statics.sendVerificationToken = function (email) {
 
                     token.save();
 
-                    /*//send token code to user email
-                    console.log(`sending code ${code} hashed as ${hash} to ${email}
-                    `);
-                    resolve({
-                        success: true,
-                        error: 'error'
-                    });*/
                     var transporter = nodemailer.createTransport({
                         service: 'gmail',
                         auth: {
@@ -110,7 +114,6 @@ userSchema.statics.sendVerificationToken = function (email) {
         });
     });
 }
-
 
 userSchema.methods.generateAuthToken = function(){
     let user = this;
@@ -173,6 +176,21 @@ userSchema.statics.findByPhone = function(phone) {
     return User.findOne({
         phone: phone
     });
+}
+
+userSchema.statics.isRegistered = function(email) {
+    return new Promise((resolve, reject) => {
+        let User = this;
+
+        User.findOne({email:email}).then((user) => {
+            
+            if(user){
+                resolve(true);
+                return;
+            }
+            resolve(false);
+        });
+    })
 }
 
 let User = mongoose.model('User', userSchema);

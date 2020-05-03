@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-let Transaction = mongoose.model('Transaction', {
+let schema = new mongoose.Schema({
     value: {
         type: Number,
         required: true,
@@ -18,5 +18,17 @@ let Transaction = mongoose.model('Transaction', {
         required: true 
     }
 });
+
+schema.statics.getAllByUserId = function(userId) {
+    return new Promise((resolve, reject) => {
+        Transaction.find({userId}).then((transactions) => {
+            resolve(transactions);
+        }).catch((e) => {
+            resolve(e.message);
+        });
+    });
+}
+
+let Transaction = mongoose.model('Transaction', schema);
 
 module.exports = { Transaction };

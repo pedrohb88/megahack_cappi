@@ -29,7 +29,6 @@ const comandos = [
     {num: 3, label: 'balance', text: 'Ver saldo', short: 'saldo'},
 ];
 
-
 let comandosString = function(){
     let str = '';
     comandos.forEach((comando) => {
@@ -152,7 +151,7 @@ app.post('/message', (req, res) => {
 
                     let email = params.Body.trim();
 
-                    axios.get(`${apiUrl}/user/verification_code/${email}`, {headers})
+                    axios.get(`${apiUrl}/bot/user/verification_code/${email}`, {headers})
                         .then((response) => {
                            
                             let msgResponse = new MessagingResponse();
@@ -193,7 +192,7 @@ app.post('/message', (req, res) => {
                         verificationCode: code,
                         phone
                     }
-                    axios.post(`${apiUrl}/user`, userData, {headers})
+                    axios.post(`${apiUrl}/bot/user`, userData, {headers})
                     .then((response) => {
                         console.log('eh krai');
                         let result = response.data;
@@ -319,8 +318,7 @@ app.post('/message', (req, res) => {
 });
 
 //envia o código de verificação para o email do usuário
-app.get('/user/verification_code/:email', authenticateServer, async (req, res) => {
-    console.log('hello');
+app.get('/bot/user/verification_code/:email', authenticateServer, async (req, res) => {
     let email = req.params.email;
     
     let result = await User.sendVerificationToken(email);
@@ -328,7 +326,7 @@ app.get('/user/verification_code/:email', authenticateServer, async (req, res) =
 });
 
 //verifica o código de verificação e cadastra o usuário
-app.post('/user', authenticateServer, (req, res) => {
+app.post('/bot/user', authenticateServer, (req, res) => {
     let body = _.pick(req.body, ['name', 'email', 'phone']);
    
     let verificationToken = new VerificationToken({
@@ -354,11 +352,6 @@ app.post('/user', authenticateServer, (req, res) => {
             body['totalBalance'] = req.body.totalBalance ? req.body.totalBalance : 0.0;
 
             body['options'] = await Profile.getOptionsByXp(defaultXp);
-            
-            body['tokens'] = [{
-                access: 'session',
-                token: uuid(),
-            }];
 
             let newUser = new User(body);
             newUser.save().then((user) => {
@@ -371,6 +364,90 @@ app.post('/user', authenticateServer, (req, res) => {
             });
 
         
+        }else{
+            res.status(401).send('Código inválido');
+        } 
+    })
+});
+
+app.get('/user/verification_code/:email', async (req, res) => {
+    let email = req.params.email;
+    
+    let result = await User.sendVerificationToken(email);
+    result['alreadyRegistered'] = await User.isRegistered(email);
+    res.send(result);
+});
+
+app.post('/user', (req, res) => {
+    let body = _.pick(req.body, ['name', 'email']);
+   
+    let verificationToken = new VerificationToken({
+        email: body.email,
+        code: req.body.verificationCode,
+    });
+
+    User.findOne({email: body.email}).then(async (u) => {
+        if(u){
+            res.status(400).send({
+                success: false,
+                error: 'Email já cadastrado'
+            })
+            return;
+        }
+
+        let validCode = await verificationToken.isValid();
+  
+        if(validCode){
+            let defaultXp = 0;
+
+            body['experience'] = defaultXp;
+            body['totalBalance'] = req.body.totalBalance ? req.body.totalBalance : 0.0;
+
+            body['options'] = await Profile.getOptionsByXp(defaultXp);
+
+            let newUser = new User(body);
+
+            newUser.save().then(async (user) => {
+
+                if(user){
+                    let token = await user.generateAuthToken();
+                    res.header('x-auth', token).send({success: true, data: user});
+                }else {
+                    res.send({success: false})
+                }
+            }).catch((e) => {
+                res.status(400).send(e);
+            });
+
+        
+        }else{
+            res.status(401).send('Código inválido');
+        } 
+    })
+})
+
+app.post('/users/login', (req, res) => {
+    let body = _.pick(req.body, ['email', 'verificationCode']);
+   
+    let verificationToken = new VerificationToken({
+        email: body.email,
+        code: req.body.verificationCode,
+    });
+
+    User.findOne({email: body.email}).then(async (user) => {
+
+        if(!user){
+            res.status(401).send('Email inválido');
+            return;
+        }
+        
+        let validCode = await verificationToken.isValid();
+  
+        if(validCode){
+           
+            user.generateAuthToken().then((token) => {
+                res.header('x-auth', token).send(user);
+            });
         }else{
             res.status(401).send('Código inválido');
         } 
@@ -407,6 +484,13 @@ app.post('/transaction/:type', authenticate, (req, res) => {
     }).catch((e) => {
         res.status(400).send(e);
     });
+});
+
+app.get('/transaction', authenticate, async (req, res) => {
+
+    let user = req.user;
+    let transactions = await Transaction.getAllByUserId(user._id);
+    res.send(transactions);
 });
 
 

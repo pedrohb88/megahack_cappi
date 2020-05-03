@@ -33,10 +33,11 @@ schema.methods.isValid = function(){
 
                     if(res){
 
-                        VerificationToken.deleteOne({email: token.email})
+                        /*VerificationToken.deleteOne({email: token.email})
                         .then(() => {
                             resolve(true);
-                        });
+                        });*/
+                        resolve(true);
                     } else resolve(false); 
                 }
             });
