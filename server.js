@@ -24,68 +24,59 @@ app.use(express.urlencoded({extended: false}));
 let userStates = {};
 
 const comandos = [
-    {num: 1, label: 'out', text: 'Gastei &num&XX,XX&num& com &label&"origem do gasto"&label&', short: '-&num&XX,XX&num&'},
-    {num: 2, label: 'in', text: 'Recebi &num&XX,XX&num& de &label&"origem do ganho"&label&', short: '+&num&XX,XX&num&'},
-    {num: 3, label: 'balance', text: 'Ver saldo', short: 'saldo'},
+    {label: 'out', text: 'Digite *-XX,XX* para adicionar um gasto. Exemplo: -50,00'},
+    {label: 'in', text: 'Digite *+XX,XX* para adicionar um ganho. Exemplo +45,50'},
+    {label: 'balance', text: 'Digite *saldo* para ver seu saldo atual'},
+    {label: 'transactions', text: 'Digite *extrato* para ver seu histórico de ganhos e gastos'},
+    {label: 'transactionsLimited', text: 'Digite *extrato X* pra ver seu histórico nos últimos X dias. Exemplo: extrato 5'},
+    {label: 'undoLast', text: 'Digite *desfazer* para cancelar a última ação'},
+    {label: 'tips', text: 'Digite *dicas* para receber dicas do Cappi'},
+    {label: 'help',text: 'Digite *ajuda* para receber a lista de comandos'}
 ];
 
 let comandosString = function(){
     let str = '';
     comandos.forEach((comando) => {
-        let text = comando.text
-        .split('&num&').join('')
-        .split('&label&').join('');
-
-        let short = comando.short
-        .split('&num&').join('');
-
-        str += `${comando.num} - ${text} ou ${short}\n`
+        str += `- ${comando.text}\n`;
     });
     return str;
 }
 
 let identifyCommand = function(str){
-    str = str.trim();
     
-    if(str.indexOf('saldo') !== -1){
-        return {type: 'balance'};
+    str = str.trim().toLowerCase();
+
+    switch(str){
+        case 'saldo':
+            return {type: 'balance'};
+            break;
+        case 'extrato':
+            return {type: 'transactions'};
+            break;
+        case 'ajuda':
+            return {type: 'help'};
+            break;
+        default:
+            break;
     }
 
-    let c = str.charAt(0);
-    let type = c == '+' || c == '-' ? c : str.split(' ')[0];
-    type = type.toLowerCase();
+    let firstChar = str.charAt(0);
+    if(firstChar == '+' || firstChar == '-'){
 
-    if(type == 'gastei' || type == '-'){
-        t = 'out';
+        str = str.replace(',', '.');
 
-        if(type == 'gastei'){
-            value = str.split(' ')[1];
-            label = str.split(' ')[3];
-
-            return {type: t, value, label};
-        }else {
-            value = str.split('-')[1];
-            return {type: t, value};
+        if(firstChar == '+'){
+            let value = str.split('+')[1].split(' ')[0];
+            let label = str.split(' ').slice(1).join(' ');
+            return {type: 'in', value, label};
+        } else {
+            let value = str.split('-')[1].split(' ')[0];
+            let label = str.split(' ').slice(1).join(' ');
+            return {type: 'out', value, label};
         }
-
     }
-    else if(type == 'recebi' || type == '+'){
-        t = 'in';
 
-        if(type == 'recebi'){
-            value = str.split(' ')[1];
-            label = str.split(' ')[3];
-
-            return {type: t, value, label};
-        }else {
-            value = str.split('+')[1];
-            return {type: t, value};
-        }
-
-    } else {
-
-        return {type: 'unidentified'}
-    }
+    return {type: 'unidentified'};
 }
 
 app.post('/message', (req, res) => {
@@ -194,7 +185,6 @@ app.post('/message', (req, res) => {
                     }
                     axios.post(`${apiUrl}/bot/user`, userData, {headers})
                     .then((response) => {
-                        console.log('eh krai');
                         let result = response.data;
                         console.log(result);
                         if(result.success){
@@ -231,6 +221,8 @@ app.post('/message', (req, res) => {
                 if(currentState && currentState.state == 'started'){
                     let command = identifyCommand(req.body.Body);
                     let commandType = command.type;
+
+                    console.log(command);
                   
                     if(commandType == 'in'){
                         let data = {
@@ -292,7 +284,65 @@ app.post('/message', (req, res) => {
                             console.log(e);
                             res.status(400).send(e.message);
                         });
-                    } else {
+                    }else if(commandType == 'transactions') {
+                        let headers = {
+                            'x-api-key': process.env['API_KEY'],
+                            'x-phone': phone
+                        }
+                        
+                        axios.get(`${apiUrl}/transaction`, {headers})
+                        .then((response) => {
+                            let transactions = response.data;
+                            let transactionsStr = 'Extrato vazio';
+
+                           
+                            if(transactions.length > 0){
+                                let totalValue = 0.0;
+                                transactionsStr = 'Extrato: \n\n';
+                                let i = 0;
+                                transactions.forEach((t) => {
+                                    
+                                    if(t.type == 'in') totalValue += t.value;
+                                    else if(t.type == 'out') totalValue -= t.value;
+
+                                    i++;
+                                    let desc = t.label != '' ? ` --- Descrição: ${t.label}` : '';
+                                    let s = t.type == 'out' ? '-':'';
+
+                                    let date = new Date(t.createdAt).toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"});
+                                    let year = date.split('-')[0];
+
+                                    let addZero = (str) => {
+                                        return parseInt(str) < 10 ? '0'+str:str;
+                                    };
+
+                                    let month = addZero(date.split('-')[1]);
+                                    let day = addZero(date.split('-')[2].split(' ')[0]);
+
+                                    let dateStr = `${day}/${month}/${year}`;
+
+                                    transactionsStr += `${i}. Valor: ${s}R$${t.value} --- Data: ${dateStr}${desc}\n`;
+                                });
+
+                                let s = totalValue < 0 ? '-' : '';
+                                transactionsStr += `\nSaldo atual: ${s}R$${totalValue}`;
+                            }
+
+                            const messagingResponse = new MessagingResponse();
+                            let message = messagingResponse.message(transactionsStr);
+                            res.send(message.toString());
+                        }).catch((e) => {
+                            console.log(e);
+                            res.status(400).send(e.message);
+                        });
+                    }else if(commandType == 'help'){
+
+                  
+                        const messagingResponse = new MessagingResponse();
+                        let message = messagingResponse.message(`Lista de comandos: \n${comandosString()}`);
+                        res.send(message.toString());
+                    }
+                    else {
                         const msgResponse = new MessagingResponse();
                         let message = msgResponse.message('Não entendi seu comando :(');
                         res.send(message.toString());

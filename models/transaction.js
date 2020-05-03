@@ -17,7 +17,7 @@ let schema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         required: true 
     }
-});
+}, {timestamps: true});
 
 schema.statics.getAllByUserId = function(userId) {
     return new Promise((resolve, reject) => {
