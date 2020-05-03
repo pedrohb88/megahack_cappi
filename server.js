@@ -315,7 +315,7 @@ app.post('/message', (req, res) => {
                                     let addZero = (str) => {
                                         return parseInt(str) < 10 ? '0'+str:str;
                                     };
-
+                                    console.log(date);
                                     let month = addZero(date.split('-')[1]);
                                     let day = addZero(date.split('-')[2].split(' ')[0]);
 
