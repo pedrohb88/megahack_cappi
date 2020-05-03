@@ -310,14 +310,14 @@ app.post('/message', (req, res) => {
                                     let s = t.type == 'out' ? '-':'';
 
                                     let date = new Date(t.createdAt).toLocaleString("pt-BR", {timeZone: "America/Sao_Paulo"});
-                                    let year = date.split('-')[0];
+                                    let year = date.split('/')[2].split(',')[0];
 
                                     let addZero = (str) => {
                                         return parseInt(str) < 10 ? '0'+str:str;
                                     };
                                     console.log(date);
-                                    let month = addZero(date.split('-')[1]);
-                                    let day = addZero(date.split('-')[2].split(' ')[0]);
+                                    let month = addZero(date.split('/')[0]);
+                                    let day = addZero(date.split('/')[1]);
 
                                     let dateStr = `${day}/${month}/${year}`;
 
