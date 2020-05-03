@@ -39,6 +39,8 @@ let comandosString = function(){
     comandos.forEach((comando) => {
         str += `- ${comando.text}\n`;
     });
+
+    str += '\n_Obs: Para adicionar uma descrição ao gasto ou receita, digite-a após o valor. Exemplo: -50,00 compras da semana_';
     return str;
 }
 
