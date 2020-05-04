@@ -16,8 +16,9 @@ let schema = new mongoose.Schema({
     userId: {
         type: mongoose.Types.ObjectId,
         required: true 
-    }
-}, {timestamps: true});
+    },
+    createdAt: { type: Date, default: Date.now }
+});
 
 schema.statics.getAllByUserId = function(userId) {
     return new Promise((resolve, reject) => {

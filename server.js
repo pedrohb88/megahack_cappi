@@ -506,6 +506,22 @@ app.post('/users/login', (req, res) => {
     })
 });
 
+
+app.get('/user', authenticate, (req, res) => {
+
+    User.findByToken(req.header('x-auth')).then((user) => {
+
+        if(!user) res.status(401).send();
+        else {
+
+            res.send(user);
+        }
+    }).catch((e) => {
+        console.log(e);
+        res.status(400).send(e);
+    });
+});
+
 app.get('/balance', authenticate, (req, res) => {
     res.send(''+req.user.totalBalance);
 });
@@ -513,12 +529,13 @@ app.get('/balance', authenticate, (req, res) => {
 app.post('/transaction/:type', authenticate, (req, res) => {
     let type = req.params.type;
 
-    let body = _.pick(req.body, ['value', 'label', 'description', 'category']);
+    let body = _.pick(req.body, ['value', 'label', 'description', 'category', 'createdAt']);
     body['type'] = type;
     body['userId'] = req.user._id;
-
+    console.log('entrou na rota');
     let newTransaction = new Transaction(body);
     newTransaction.save().then((t) => {
+        console.log('salvou a transação');
         
         User.findOne({email: req.user.email}).then((u) => {
             if(type == 'in'){
@@ -530,10 +547,12 @@ app.post('/transaction/:type', authenticate, (req, res) => {
                 res.send(t);
             }).catch((e) => {
                 console.log(e);
+                res.status(400).send();
             });
         });
 
     }).catch((e) => {
+        console.log(e);
         res.status(400).send(e);
     });
 });

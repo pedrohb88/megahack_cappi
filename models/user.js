@@ -157,7 +157,7 @@ userSchema.statics.findByToken = function(token){
             reject();
         });*/
         //same as
-        return Promise.reject();
+        return Promise.reject(e);
     }
 
     //returns a Promise with the user as param
