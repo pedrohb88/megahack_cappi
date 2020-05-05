@@ -30,7 +30,7 @@ const comandos = [
     {label: 'transactions', text: 'Digite *extrato* para ver seu histórico de ganhos e gastos'},
     //{label: 'transactionsLimited', text: 'Digite *extrato X* pra ver seu histórico nos últimos X dias. Exemplo: extrato 5'},
     //{label: 'undoLast', text: 'Digite *desfazer* para cancelar a última ação'},
-    //{label: 'tips', text: 'Digite *dicas* para receber dicas do Cappi'},
+    //'{label: 'tips', text: 'Digite *dicas* para receber dicas do Cappi'},
     {label: 'help',text: 'Digite *ajuda* para receber a lista de comandos'}
 ];
 
@@ -201,12 +201,16 @@ app.post('/message', (req, res) => {
                             msgResponse.message(`Para começar a usar, digite um dos seguintes comandos: \n${comandosString()}`);
                             res.send(msgResponse.toString());
                         } else {
-                            res.status(400).send(result.error);
+                            let msgResponse = new MessagingResponse();
+                            msgResponse.message(`Houve algum erro com o código informado :( Pode conferir e digitar novamente, por favor?)`);
+                            res.send(msgResponse.toString());
                         }
 
                     }).catch((e) => {
                         console.log(e);
-                        res.status(400).send(e.message);
+                        let msgResponse = new MessagingResponse();
+                        msgResponse.message(`Houve algum erro com o código informado :( Pode conferir e digitar novamente, por favor?)`);
+                        res.send(msgResponse.toString());
                     });
                 }
 
