@@ -209,7 +209,7 @@ app.post('/message', (req, res) => {
                     }).catch((e) => {
                         console.log(e);
                         let msgResponse = new MessagingResponse();
-                        msgResponse.message(`Houve algum erro com o código informado :( Pode conferir e digitar novamente, por favor?)`);
+                        msgResponse.message(`Houve algum erro com o código informado :( Pode conferir e digitar novamente, por favor?`);
                         res.send(msgResponse.toString());
                     });
                 }
