@@ -28,9 +28,9 @@ const comandos = [
     {label: 'in', text: 'Digite *+XX,XX* para adicionar um ganho. Exemplo +45,50'},
     {label: 'balance', text: 'Digite *saldo* para ver seu saldo atual'},
     {label: 'transactions', text: 'Digite *extrato* para ver seu histórico de ganhos e gastos'},
-    {label: 'transactionsLimited', text: 'Digite *extrato X* pra ver seu histórico nos últimos X dias. Exemplo: extrato 5'},
-    {label: 'undoLast', text: 'Digite *desfazer* para cancelar a última ação'},
-    {label: 'tips', text: 'Digite *dicas* para receber dicas do Cappi'},
+    //{label: 'transactionsLimited', text: 'Digite *extrato X* pra ver seu histórico nos últimos X dias. Exemplo: extrato 5'},
+    //{label: 'undoLast', text: 'Digite *desfazer* para cancelar a última ação'},
+    //{label: 'tips', text: 'Digite *dicas* para receber dicas do Cappi'},
     {label: 'help',text: 'Digite *ajuda* para receber a lista de comandos'}
 ];
 
