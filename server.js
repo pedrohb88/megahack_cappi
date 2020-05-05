@@ -202,7 +202,7 @@ app.post('/message', (req, res) => {
                             res.send(msgResponse.toString());
                         } else {
                             let msgResponse = new MessagingResponse();
-                            msgResponse.message(`Houve algum erro com o código informado :( Pode conferir e digitar novamente, por favor?)`);
+                            msgResponse.message(`Houve algum erro com o código informado :( Pode conferir e digitar novamente, por favor?`);
                             res.send(msgResponse.toString());
                         }
 
