@@ -14,7 +14,7 @@ let schema = new mongoose.Schema( {
 
 schema.index({createdAt: 1}, {expireAfterSeconds: 900});
 
-schema.methods.isValid = function(){
+schema.methods.isValid = function(shouldDelete = true){
     return new Promise((resolve, reject) => {
         let token = this;
     
@@ -32,11 +32,12 @@ schema.methods.isValid = function(){
                 else{
 
                     if(res){
-
-                        VerificationToken.deleteOne({email: token.email})
-                        .then(() => {
-                            resolve(true);
-                        });
+                        if(shouldDelete){
+                            VerificationToken.deleteOne({email: token.email})
+                            .then(() => {
+                                resolve(true);
+                            });
+                        }
                         resolve(true);
                     } else resolve(false); 
                 }
