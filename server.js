@@ -568,6 +568,19 @@ app.get('/transaction', authenticate, async (req, res) => {
     res.send(transactions);
 });
 
+app.post('/user/verifyCode', async (req, res) => {
+    let body = _.pick(req.body, ['email', 'verificationCode']);
+   
+    let verificationToken = new VerificationToken({
+        email: body.email,
+        code: req.body.verificationCode,
+    });
+
+    let validCode = await verificationToken.isValid();
+    if(validCode) res.status(200).send();
+    else res.status(401).send();
+})
+
 
 app.listen(port, () => {
     console.log(`server running on port ${port}`);
