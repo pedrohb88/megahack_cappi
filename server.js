@@ -576,7 +576,7 @@ app.post('/user/verifyCode', async (req, res) => {
         code: req.body.verificationCode,
     });
 
-    let validCode = await verificationToken.isValid();
+    let validCode = await verificationToken.isValid(false);
     if(validCode) res.status(200).send();
     else res.status(401).send();
 })
